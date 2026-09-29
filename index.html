@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>日経テスト 予想問題集</title>
-    <!-- スタイリング用のTailwind CSS -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Wordファイル(.docx)をブラウザ上で解析するためのライブラリ -->
+    <!-- Wordファイル(.docx)解析ライブラリ -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
     <style>
         body { 
@@ -34,7 +34,6 @@
             from { opacity: 0; transform: translateY(-10px); } 
             to { opacity: 1; transform: translateY(0); } 
         }
-        /* ドロップエリアのスタイル */
         #drop-zone {
             border: 2px dashed #9ca3af;
             border-radius: 0.5rem;
@@ -48,10 +47,7 @@
             background-color: #e0f2fe;
             border-color: #3b82f6;
         }
-        #file-input {
-            display: none;
-        }
-        /* ローディングスピナー */
+        #file-input { display: none; }
         .loader {
             border: 4px solid #f3f3f3;
             border-top: 4px solid #3b82f6;
@@ -77,69 +73,80 @@
             <p id="header-subtitle" class="text-center text-blue-200 mt-2 text-sm">問題データセットアップ</p>
         </div>
 
-        <!-- セットアップ画面（Wordファイルドロップエリア） -->
+        <!-- セットアップ画面 -->
         <div id="setup-container" class="p-6 md:p-10">
             <h2 class="text-lg font-bold mb-4 text-gray-800 text-center">問題ファイル（.docx）を読み込む</h2>
             <p class="text-sm text-gray-600 mb-6 text-center">
-                お手元の「日経テスト問題集.docx」ファイルを下の枠内にドラッグ＆ドロップするか、<br>クリックしてファイルを選択してください。
+                お手元の「日経テスト問題集.docx」をタップして選択してください。
             </p>
             
-            <div id="drop-zone" class="mb-4">
-                <svg class="mx-auto h-12 w-12 text-gray-400 mb-3" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+            <div id="drop-zone" class="mb-4 shadow-sm hover:shadow-md">
+                <svg class="mx-auto h-12 w-12 text-blue-500 mb-3" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                     <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
-                <p class="text-sm text-gray-600 font-medium">ここにWordファイル (.docx) をドロップ</p>
-                <p class="text-xs text-gray-500 mt-1">またはクリックしてファイルを選択</p>
+                <p class="text-base text-gray-700 font-bold mb-1">ここをタップしてファイルを選択</p>
+                <p class="text-xs text-gray-500">※前回途中でやめた場合は、続きから自動で再開します</p>
                 <input type="file" id="file-input" accept=".docx" />
             </div>
             
             <div class="loader mt-4" id="loader"></div>
-            <p id="status-msg" class="text-center text-sm font-medium mt-2 text-gray-600 hidden">ファイルを解析中...</p>
+            <p id="status-msg" class="text-center text-sm font-bold mt-3 text-blue-600 hidden">問題を解析中... 少しお待ちください</p>
             <p id="error-msg" class="text-red-500 text-center text-sm mt-2 hidden"></p>
         </div>
 
-        <!-- クイズ画面 (初期状態は非表示) -->
-        <div id="quiz-container" class="hidden p-6 md:p-8">
-            <!-- 進捗状況 -->
-            <div class="flex justify-between items-center mb-6">
-                <span id="question-number" class="text-lg font-bold text-blue-800"></span>
-                <span id="score-display" class="text-sm text-gray-500"></span>
+        <!-- クイズ画面 -->
+        <div id="quiz-container" class="hidden p-5 md:p-8">
+            
+            <!-- 進捗状況と【プルダウン機能】 -->
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
+                <span id="question-number" class="text-xl font-bold text-blue-800"></span>
+                
+                <!-- 問題ジャンプ用プルダウン -->
+                <div class="flex items-center gap-2 bg-blue-50 py-1.5 px-3 rounded-lg border border-blue-200 shadow-sm w-full sm:w-auto">
+                    <label for="jump-select" class="text-sm font-bold text-blue-700 whitespace-nowrap">問題移動:</label>
+                    <select id="jump-select" class="bg-transparent text-base font-bold text-gray-800 w-full focus:outline-none cursor-pointer">
+                        <!-- JSで動的に追加されます -->
+                    </select>
+                </div>
             </div>
 
-            <div class="w-full bg-gray-200 rounded-full h-2.5 mb-8">
-                <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%; transition: width 0.3s;"></div>
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-xs text-gray-500 font-bold">進捗状況</span>
+                <span id="score-display" class="text-sm font-bold text-gray-600"></span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-3 mb-8 shadow-inner">
+                <div id="progress-bar" class="bg-blue-600 h-3 rounded-full" style="width: 0%; transition: width 0.4s ease;"></div>
             </div>
 
             <!-- 問題文 -->
-            <div class="mb-8">
-                <p id="question-text" class="text-lg font-medium leading-relaxed"></p>
+            <div class="mb-8 bg-white p-4 rounded-lg border border-gray-100 shadow-sm">
+                <p id="question-text" class="text-lg font-medium leading-relaxed text-gray-800"></p>
             </div>
 
             <!-- 選択肢 -->
             <div id="options-container" class="space-y-3 mb-8"></div>
 
-            <!-- 解説 (初期状態は非表示) -->
-            <div id="explanation-container" class="hidden explanation-box bg-blue-50 border-l-4 border-blue-500 p-5 rounded-r-lg mb-8">
-                <h3 id="result-title" class="font-bold text-lg mb-2"></h3>
-                <p class="text-sm font-semibold text-blue-800 mb-2">KEYWORD: <span id="keyword-text" class="text-gray-800 font-normal"></span></p>
+            <!-- 解説 -->
+            <div id="explanation-container" class="hidden explanation-box bg-blue-50 border-l-4 border-blue-500 p-5 rounded-r-lg mb-8 shadow-sm">
+                <h3 id="result-title" class="font-bold text-xl mb-3"></h3>
+                <p class="text-sm font-bold text-blue-800 mb-3 bg-white inline-block px-3 py-1 rounded-full border border-blue-200 shadow-sm">KEYWORD: <span id="keyword-text" class="text-gray-800"></span></p>
                 <div id="explanation-text" class="text-sm leading-relaxed text-gray-700 space-y-2"></div>
             </div>
 
-            <button id="next-btn" class="hidden w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200">
+            <button id="next-btn" class="hidden w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-4 rounded-xl transition duration-200 shadow-lg text-lg">
                 次の問題へ
             </button>
         </div>
 
-        <!-- リザルト画面 (初期状態は非表示) -->
+        <!-- リザルト画面 -->
         <div id="result-container" class="hidden p-6 md:p-10 text-center">
             <h2 class="text-3xl font-bold text-gray-800 mb-6">全問終了！お疲れ様でした。</h2>
-            <div class="bg-gray-50 rounded-xl p-8 mb-8 border border-gray-200">
-                <p class="text-gray-600 mb-2">あなたの正答率</p>
-                <p id="final-percentage" class="text-5xl font-bold text-blue-600 mb-4"></p>
-                <p class="text-lg text-gray-700"><span id="total-questions"></span>問中 <span id="final-score" class="font-bold"></span> 問正解</p>
+            <div class="bg-gray-50 rounded-xl p-8 mb-8 border border-gray-200 shadow-sm">
+                <p class="text-gray-600 mb-2 font-bold">あなたの正解数</p>
+                <p class="text-4xl text-gray-800 mb-2"><span id="final-score" class="font-bold text-6xl text-blue-600"></span> / <span id="total-questions"></span> 問</p>
             </div>
-            <button onclick="location.reload()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full transition duration-200 shadow-md">
-                タイトルへ戻る（別のファイルを読み込む）
+            <button onclick="location.reload()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-full transition duration-200 shadow-lg w-full md:w-auto text-lg">
+                もう一度最初から挑戦する
             </button>
         </div>
     </div>
@@ -150,7 +157,6 @@
         let score = 0;
         let hasAnswered = false;
 
-        // DOM要素の取得
         const setupContainer = document.getElementById('setup-container');
         const quizContainer = document.getElementById('quiz-container');
         const resultContainer = document.getElementById('result-container');
@@ -172,69 +178,42 @@
         const keywordTextEl = document.getElementById('keyword-text');
         const explanationTextEl = document.getElementById('explanation-text');
         const nextBtn = document.getElementById('next-btn');
+        const jumpSelect = document.getElementById('jump-select');
 
-        // ドラッグ＆ドロップのイベント設定
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('dragover');
-        });
-
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('dragover');
-        });
-
+        // ドラッグ＆ドロップ・ファイル選択イベント
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+        dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('dragover'); });
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
             dropZone.classList.remove('dragover');
-            
-            if (e.dataTransfer.files.length > 0) {
-                const file = e.dataTransfer.files[0];
-                handleFile(file);
-            }
+            if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
         });
-
-        // クリックでファイル選択
-        dropZone.addEventListener('click', () => {
-            fileInput.click();
-        });
-
+        dropZone.addEventListener('click', () => fileInput.click());
         fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                const file = e.target.files[0];
-                handleFile(file);
-            }
+            if (e.target.files.length > 0) handleFile(e.target.files[0]);
         });
 
-        // ファイルを処理する関数
         function handleFile(file) {
             errorMsg.classList.add('hidden');
-            
-            // 拡張子チェック
             if (!file.name.endsWith('.docx')) {
                 showError('Wordファイル（.docx）を選択してください。');
                 return;
             }
-
-            // ロード中表示
             dropZone.style.pointerEvents = 'none';
             dropZone.style.opacity = '0.5';
             loader.style.display = 'block';
-            statusMsg.textContent = 'Wordファイルを解析中...';
             statusMsg.classList.remove('hidden');
 
             const reader = new FileReader();
             reader.onload = function(event) {
                 const arrayBuffer = event.target.result;
-                
-                // Mammoth.jsを使用してWord(.docx)をブラウザ上でテキストに変換
                 mammoth.extractRawText({arrayBuffer: arrayBuffer})
                     .then(function(result) {
-                        const text = result.value;
-                        processText(text);
+                        processText(result.value);
                     })
                     .catch(function(err) {
                         console.error(err);
-                        showError('ファイルの解析に失敗しました。ファイルが破損していないか確認してください。');
+                        showError('ファイルの解析に失敗しました。');
                         resetLoader();
                     });
             };
@@ -253,62 +232,59 @@
             statusMsg.classList.add('hidden');
         }
 
-        // 抽出したテキストをパースする
         function processText(text) {
             questionsData = parseTextToQuestions(text);
             
             if (questionsData.length === 0) {
-                showError('問題を検出できませんでした。「【第〇〇問】」という形式で始まっているか確認してください。');
+                showError('問題を検出できませんでした。「【第〇〇問】」で始まっているか確認してください。');
                 resetLoader();
                 return;
             }
 
-            // 画面の切り替え
+            // プルダウンの選択肢を生成
+            jumpSelect.innerHTML = '';
+            questionsData.forEach((q, index) => {
+                const opt = document.createElement('option');
+                opt.value = index;
+                opt.textContent = `第 ${index + 1} 問 からスタート`;
+                jumpSelect.appendChild(opt);
+            });
+
             setupContainer.classList.add('hidden');
             quizContainer.classList.remove('hidden');
             headerSubtitle.textContent = `全 ${questionsData.length} 問`;
             
+            // ローカルストレージから前回開いていた問題番号を取得
+            const savedIndex = localStorage.getItem('nikkei_quiz_last_index');
+            if (savedIndex !== null && parseInt(savedIndex, 10) < questionsData.length) {
+                currentQuestionIndex = parseInt(savedIndex, 10);
+            } else {
+                currentQuestionIndex = 0;
+            }
+            
             loadQuestion();
         }
 
-        // テキストを解析して問題配列に変換する関数
         function parseTextToQuestions(text) {
             const questions = [];
-            // 「【第〇〇問】」または「【第〇〇问】」を区切りとしてブロックに分割
             const blocks = text.split(/【第\d+(?:問|问)】/).slice(1);
             
             blocks.forEach((block, index) => {
                 const lines = block.trim().split('\n').map(l => l.trim()).filter(l => l);
-                let questionText = [];
-                let options = [];
-                let answerText = "";
-                let keyword = "";
-                let explanationText = [];
-                
+                let questionText = [], options = [], answerText = "", keyword = "", explanationText = [];
                 let mode = 'question'; 
                 
                 lines.forEach(line => {
-                    if (line.startsWith('【解答・解説】')) {
-                        mode = 'answer';
-                        return;
-                    }
+                    if (line.startsWith('【解答・解説】')) { mode = 'answer'; return; }
                     
                     if (mode === 'question') {
-                        // 選択肢の抽出 (● で始まる行)
-                        if (line.startsWith('●')) {
-                            options.push(line.replace(/^●\s*/, ''));
-                        } else {
-                            questionText.push(line);
-                        }
+                        if (line.startsWith('●')) options.push(line.replace(/^●\s*/, ''));
+                        else questionText.push(line);
                     } else if (mode === 'answer') {
                         if (line.startsWith('正解：')) {
-                            // 括弧内のテキストを抽出するか、なければそのまま使用
                             const match = line.match(/●[（(](.*?)[)）]/);
-                            if (match) {
-                                answerText = match[1];
-                            } else {
-                                answerText = line.replace('正解：', '').replace(/●/g, '').trim();
-                            }
+                            if (match) answerText = match[1];
+                            else answerText = line.replace('正解：', '').replace(/●/g, '').trim();
                         } else if (line.startsWith('KEYWORD：')) {
                             keyword = line.replace('KEYWORD：', '');
                         } else {
@@ -317,9 +293,8 @@
                     }
                 });
                 
-                // 正解のインデックスを探す (部分一致などで判定)
                 let correctIndex = options.findIndex(opt => opt.includes(answerText) || answerText.includes(opt));
-                if (correctIndex === -1) correctIndex = 0; // 見つからない場合のフォールバック
+                if (correctIndex === -1) correctIndex = 0; 
                 
                 if(options.length > 0) {
                     questions.push({
@@ -328,21 +303,31 @@
                         options: options,
                         correctIndex: correctIndex,
                         keyword: keyword,
-                        explanation: explanationText.join('<br><br>') // 段落を少し開ける
+                        explanation: explanationText.join('<br><br>') 
                     });
                 }
             });
             return questions;
         }
 
-        // 問題の読み込みと表示
+        // ジャンプ機能（プルダウン変更時の処理）
+        jumpSelect.addEventListener('change', (e) => {
+            currentQuestionIndex = parseInt(e.target.value, 10);
+            loadQuestion();
+        });
+
         function loadQuestion() {
             hasAnswered = false;
             const q = questionsData[currentQuestionIndex];
             
-            questionNumberEl.textContent = `第 ${currentQuestionIndex + 1} 問 / ${questionsData.length}`;
+            // 現在の問題番号をスマホのブラウザに保存（自動セーブ）
+            localStorage.setItem('nikkei_quiz_last_index', currentQuestionIndex);
+            
+            questionNumberEl.textContent = `第 ${currentQuestionIndex + 1} 問`;
+            jumpSelect.value = currentQuestionIndex; // プルダウンの表示を合わせる
+            
             progressBarEl.style.width = `${((currentQuestionIndex) / questionsData.length) * 100}%`;
-            scoreDisplayEl.textContent = `正解: ${score}`;
+            scoreDisplayEl.textContent = `現在の正解数: ${score}`;
             
             questionTextEl.innerHTML = q.question;
             optionsContainer.innerHTML = '';
@@ -351,14 +336,13 @@
 
             q.options.forEach((opt, index) => {
                 const btn = document.createElement('button');
-                btn.className = 'option-btn w-full text-left bg-white border border-gray-300 hover:border-blue-500 hover:bg-blue-50 text-gray-800 font-medium py-3 px-4 rounded-lg';
+                btn.className = 'option-btn w-full text-left bg-white border border-gray-300 hover:border-blue-500 hover:bg-blue-50 text-gray-800 font-bold py-4 px-4 rounded-xl text-base shadow-sm leading-relaxed';
                 btn.textContent = opt;
                 btn.onclick = () => selectOption(index, btn);
                 optionsContainer.appendChild(btn);
             });
         }
 
-        // 選択肢を選んだ時の処理
         function selectOption(selectedIndex, selectedBtn) {
             if (hasAnswered) return;
             hasAnswered = true;
@@ -366,22 +350,19 @@
             const q = questionsData[currentQuestionIndex];
             const buttons = optionsContainer.querySelectorAll('button');
 
-            // 選択後はボタンを無効化
             buttons.forEach(btn => btn.disabled = true);
 
             if (selectedIndex === q.correctIndex) {
                 selectedBtn.classList.add('correct-btn');
                 resultTitleEl.textContent = '⭕ 正解！';
-                resultTitleEl.className = 'font-bold text-lg mb-2 text-green-600';
+                resultTitleEl.className = 'font-bold text-xl mb-2 text-green-600';
                 score++;
-                scoreDisplayEl.textContent = `正解: ${score}`;
+                scoreDisplayEl.textContent = `現在の正解数: ${score}`;
             } else {
                 selectedBtn.classList.add('incorrect-btn');
-                if(buttons[q.correctIndex]) {
-                    buttons[q.correctIndex].classList.add('correct-btn'); // 正解のボタンを緑色に
-                }
+                if(buttons[q.correctIndex]) buttons[q.correctIndex].classList.add('correct-btn'); 
                 resultTitleEl.textContent = '❌ 不正解...';
-                resultTitleEl.className = 'font-bold text-lg mb-2 text-red-600';
+                resultTitleEl.className = 'font-bold text-xl mb-2 text-red-600';
             }
 
             keywordTextEl.textContent = q.keyword;
@@ -396,7 +377,6 @@
             nextBtn.classList.remove('hidden');
         }
 
-        // 次へボタンの処理
         nextBtn.onclick = () => {
             currentQuestionIndex++;
             if (currentQuestionIndex < questionsData.length) {
@@ -407,13 +387,12 @@
             }
         };
 
-        // 結果画面の表示
         function showResult() {
             quizContainer.classList.add('hidden');
             resultContainer.classList.remove('hidden');
+            // 全問終わったらセーブデータをリセット
+            localStorage.removeItem('nikkei_quiz_last_index');
             
-            const percentage = Math.round((score / questionsData.length) * 100);
-            document.getElementById('final-percentage').textContent = `${percentage}%`;
             document.getElementById('final-score').textContent = score;
             document.getElementById('total-questions').textContent = questionsData.length;
             window.scrollTo(0, 0);
